@@ -185,7 +185,14 @@ def main():
             return 1
         try:
             request = json.loads(raw, parse_constant=lambda value: (_ for _ in ()).throw(ValueError("Non-finite JSON number")))
-            response = handle(request, options.endpoint)
+            if isinstance(request, list):
+                if request:
+                    responses = [handle(item, options.endpoint) for item in request]
+                    response = [item for item in responses if item is not None] or None
+                else:
+                    response = {"jsonrpc": "2.0", "id": None, "error": {"code": -32600, "message": "Invalid empty batch"}}
+            else:
+                response = handle(request, options.endpoint)
         except (ValueError, UnicodeDecodeError):
             response = {"jsonrpc": "2.0", "id": None, "error": {"code": -32700, "message": "Parse error"}}
         if response is not None:

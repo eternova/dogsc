@@ -24,6 +24,12 @@ class ProtocolTests(unittest.TestCase):
         unavailable = self.request("tools/call", {"name": "dogsc_status"})
         self.assertTrue(server.handle(unavailable, Path("/missing"))["result"]["isError"])
 
+    def test_2025_03_batch_omits_notification_responses(self):
+        batch = [self.request("ping"), {"jsonrpc": "2.0", "method": "notifications/initialized"}, {"jsonrpc": "2.0", "id": 2, "method": "ping"}]
+        process = subprocess.run([sys.executable, str(Path(server.__file__))], input=json.dumps(batch) + '\n', text=True, capture_output=True, check=True)
+        response = json.loads(process.stdout)
+        self.assertEqual([item["id"] for item in response], [1, 2])
+
     def test_stdio_is_only_json_and_recovers_after_parse_error(self):
         process = subprocess.run([sys.executable, str(Path(server.__file__))], input='bad\n' + json.dumps(self.request("ping")) + '\n', text=True, capture_output=True, check=True)
         lines = [json.loads(line) for line in process.stdout.splitlines()]

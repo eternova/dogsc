@@ -12,7 +12,7 @@
   - 实际 Core Image 像素：恒等表、纯红表、强度混合、关闭和 0 强度。
   - 实时预览实际 CMSampleBuffer：新缓冲区着色、原像素不变、PTS 保留。
   - 项目递归合并、LUT 数据保留、空值移除、字段拼写错误拒绝。
-- Python MCP stdio 协议测试：3 项，0 失败。
+- Python MCP stdio 协议测试（含批量消息）：4 项，0 失败。
 - `git diff --check`。
 - 实际运行的已签名开发版：stdio initialize / notifications/initialized / tools/list / tools/call。
 - 完整合成媒体链路 `mcp/smoke_test.py`：21 个工具发现，打开项目、导入 LUT、错误 revision/越界/未知字段拦截、修改/撤销/重做、分割/撤销、保存嵌入的 LUT、移动原 LUT 后导出。
