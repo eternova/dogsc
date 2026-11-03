@@ -460,6 +460,7 @@ struct EditorView: View {
                 activeStyleSnapshot = matching
                 activeStylePresetBackgroundSources = matching.backgroundAsset == nil ? [] : [editorStore.project.canvas.backgroundSource]
             }
+            AutomationEditor.shared.attach(store: editorStore, media: mediaSession, playback: playbackController, context: context, undo: undoManager)
             editorStore.attachUndoManager(undoManager)
             if editorStore.selection == nil {
                 editorStore.selection = .canvas
@@ -478,10 +479,12 @@ struct EditorView: View {
             presentUndoToast(redo: true, actionName: manager.undoActionName)
         }
         .onChange(of: undoManager) { _, manager in
+            AutomationEditor.shared.undo = manager
             editorStore.attachUndoManager(manager)
             EditorMenuBridge.shared.attachEditor(undoManager: manager)
         }
         .onDisappear {
+            AutomationEditor.shared.detach(id: context.id)
             stylePresetTask?.cancel()
             resolveExternalAction(.windowClosing)
             playbackController.invalidate()

@@ -179,6 +179,12 @@ final class AppModel: ObservableObject {
     let configurationCameraFrameSink = ImmediateCameraPreviewFrameSink()
     @Published var recordingDestinationName = ProjectStore.savedProjectsFolder.lastPathComponent
     @Published var recordingTitleDraft = ""
+    @Published var recordingCameraLUT: CameraLUT? {
+        didSet {
+            configurationCameraFrameSink.setLUT(recordingCameraLUT)
+            cameraPreviewController.frameSink.setLUT(recordingCameraLUT)
+        }
+    }
     @Published var recordingCameraMirrored = UserDefaults.standard.object(forKey: "recording.camera-mirrored") as? Bool ?? true {
         didSet {
             UserDefaults.standard.set(recordingCameraMirrored, forKey: "recording.camera-mirrored")
@@ -528,6 +534,7 @@ final class AppModel: ObservableObject {
                 let customTitle = recordingTitleDraft.trimmingCharacters(in: .whitespacesAndNewlines)
                 if !customTitle.isEmpty { project.title = String(customTitle.prefix(120)) }
                 project.camera.isMirrored = recordingCameraMirrored
+                project.camera.lut = recordingCameraLUT
                 let session = try ProjectStore.createSession(
                     preferredTitle: project.title,
                     createdAt: recordingCreatedAt

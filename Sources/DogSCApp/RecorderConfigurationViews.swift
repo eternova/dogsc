@@ -85,6 +85,8 @@ struct RecorderInputPopover: View {
                     }
                     .padding(.horizontal, 10).padding(.top, 6)
                     .transition(.opacity.combined(with: .scale(scale: 0.96)))
+                CameraLUTControls(lut: $model.recordingCameraLUT)
+                    .padding(10)
                 Button {
                     withAnimation(RecorderMotion.settle) { expandedResolution.toggle() }
                 } label: {

@@ -103,7 +103,10 @@ enum EditorStylePresetStore {
     private static let lastUsedKey = "editor-last-used-style-v1"
     private static let defaultIDKey = "editor-scene-preset.default-id"
     private static var defaults: UserDefaults {
-        UserDefaults(suiteName: "cn.laogou.dogsc") ?? .standard
+        // A local LUT/MCP development build must not replace presets or the
+        // last-used camera grade in the independently installed release app.
+        if Bundle.main.bundleIdentifier == "cn.laogou.dogsc.dev" { return .standard }
+        return UserDefaults(suiteName: "cn.laogou.dogsc") ?? .standard
     }
 
     static func load() -> [EditorStylePreset] {

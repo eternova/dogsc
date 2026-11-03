@@ -58,6 +58,15 @@ final class DogSCApplicationDelegate: NSObject,
         // 统一使用打包图标，不再在运行时更换。
         let model = AppModel()
         self.model = model
+        if CommandLine.arguments.contains("--automation") {
+            UserDefaults.standard.set(true, forKey: "automation.enabled")
+        } else if CommandLine.arguments.contains("--no-automation") {
+            UserDefaults.standard.set(false, forKey: "automation.enabled")
+        }
+        if UserDefaults.standard.bool(forKey: "automation.enabled") {
+            do { try AutomationServer.shared.start(model: model) }
+            catch { model.errorMessage = "MCP: \(error.localizedDescription)" }
+        }
         recordingMarkerHotKey = RecordingMarkerHotKey(model: model)
         WindowCoordinator.install(model: model)
         ProjectStore.synchronizeSystemRecentProjects()

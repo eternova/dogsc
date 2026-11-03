@@ -1,6 +1,7 @@
 import AppKit
 import AVFoundation
 import CoreMedia
+import RecorderCore
 
 enum RecordingCameraPreviewScalePolicy {
     /// Some external cameras expose their landscape image inside a portrait
@@ -34,6 +35,14 @@ final class ImmediateCameraPreviewFrameSink: @unchecked Sendable {
     private var renderer: AVSampleBufferVideoRenderer?
     private var pendingFrame: PendingFrame?
     private var drainIsScheduled = false
+    private var lut: CameraLUT?
+    private let lutRenderer = CameraLUTPreviewRenderer()
+
+    func setLUT(_ value: CameraLUT?) {
+        lock.lock()
+        lut = value
+        lock.unlock()
+    }
 
     func attach(_ renderer: AVSampleBufferVideoRenderer?) {
         lock.lock()
@@ -105,7 +114,11 @@ final class ImmediateCameraPreviewFrameSink: @unchecked Sendable {
         // CMSampleBuffer shallow copy owns a separate attachment dictionary
         // while retaining the same CVPixelBuffer; this isolates metadata
         // without copying the camera image.
-        guard let displaySample = Self.displaySampleBuffer(copying: sampleBuffer) else {
+        lock.lock()
+        let currentLUT = lut
+        lock.unlock()
+        guard let graded = lutRenderer.render(sampleBuffer, lut: currentLUT),
+              let displaySample = Self.displaySampleBuffer(copying: graded) else {
             return
         }
         renderer.enqueue(displaySample)

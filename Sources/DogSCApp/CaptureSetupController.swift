@@ -328,6 +328,44 @@ final class CaptureSetupController: ObservableObject {
         }
     }
 
+    /// Programmatic source selection uses the same confirmed target state as
+    /// the picker. Replacing configuration alone would leave Start disabled.
+    func configureForAutomation(_ replacement: CaptureConfiguration, canApply: () -> Bool) async throws {
+        var selected: CaptureSelectionTarget?
+        var windows: [CaptureWindowInfo]?
+        switch replacement.source {
+        case .display, .area:
+            if let id = replacement.displayID {
+                guard let display = providers.displays().first(where: { $0.id == id }) else { throw AutomationError.message("Display ID is unavailable") }
+                if replacement.source == .area {
+                    guard let rect = replacement.area else { throw AutomationError.message("Area capture requires a normalized area") }
+                    selected = .area(displayID: id, displayName: display.name, rect: rect)
+                } else { selected = .display(id: id, name: display.name) }
+            }
+        case .window:
+            if let id = replacement.windowID {
+                guard readiness.hasScreenRecordingPermission else { throw AutomationError.message("Screen recording permission is required") }
+                windows = try await CaptureWindowInfo.available()
+                guard let window = windows?.first(where: { $0.id == id }) else { throw AutomationError.message("Window ID is unavailable") }
+                selected = .window(id: id, name: window.pickerLabel, applicationBundleIdentifier: window.applicationBundleIdentifier, applicationName: window.applicationName)
+            }
+        case .device:
+            if let id = replacement.deviceID {
+                guard let device = availableScreenDevices.first(where: { $0.id == id }) else { throw AutomationError.message("Screen device ID is unavailable") }
+                selected = .device(id: id, name: device.name)
+            }
+        }
+        guard canApply() else { throw AutomationError.message("Recording state changed during source discovery") }
+        stopPresentation()
+        if let windows { availableWindows = windows }
+        publishConfiguration(replacement)
+        if let selected {
+            let session = selection.choose(selected.source)
+            _ = confirm(selected, token: session.token)
+        } else { selection.reset() }
+        refreshReadiness()
+    }
+
     func replaceConfiguration(_ replacement: CaptureConfiguration) {
         publishConfiguration(replacement)
         refreshReadiness()

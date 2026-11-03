@@ -8,8 +8,9 @@ struct ScenePresetBackgroundAsset: Codable, Equatable, Sendable {
     let isVideo: Bool
 
     static var directory: URL {
-        FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-            .appendingPathComponent("DogSC/ScenePresets/Assets", isDirectory: true)
+        let productFolder = Bundle.main.bundleIdentifier == "cn.laogou.dogsc.dev" ? "DogSC Dev" : "DogSC"
+        return FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("\(productFolder)/ScenePresets/Assets", isDirectory: true)
     }
 
     var url: URL? {

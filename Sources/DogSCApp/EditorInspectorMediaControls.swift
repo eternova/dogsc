@@ -243,6 +243,7 @@ extension EditorInspectorView {
 
     var cameraInspectorControls: some View {
         VStack(alignment: .leading, spacing: 14) {
+            CameraLUTControls(lut: cameraBinding(\.lut, actionName: "调整摄像头 LUT"))
             EditorToggle(
                 isOn: Binding(
                     get: { !editorStore.previewProject.camera.isHidden },

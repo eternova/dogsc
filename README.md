@@ -4,6 +4,8 @@
 
 <h1 align="center">DogSC</h1>
 
+> 此 fork 新增自选摄像头 `.cube` LUT（实时预览、剪辑、导出）和供 Codex 使用的本机 MCP。构建、接入、工具覆盖与已知边界见 [LUT / MCP 使用说明](docs/MCP.md)。
+
 <p align="center">
   <b>录得清楚，剪得轻松，运镜自然。</b><br>
   macOS 原生的录屏与轻量剪辑工具。

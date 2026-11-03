@@ -256,6 +256,7 @@ public struct FrameScreenScene: Equatable, Sendable {
 }
 
 public struct FrameCameraScene: Equatable, Sendable {
+    public var lut: CameraLUT? = nil
     public var rect: CompositionRect
     public var contentFill: CameraContentFillLayout?
     public var cornerRadius: Double
@@ -273,7 +274,8 @@ public struct FrameCameraScene: Equatable, Sendable {
         borderColor: HexColor = .white,
         shadow: FrameShadow?,
         opacity: Double,
-        isMirrored: Bool
+        isMirrored: Bool,
+        lut: CameraLUT? = nil
     ) {
         self.rect = rect
         self.contentFill = contentFill
@@ -283,6 +285,7 @@ public struct FrameCameraScene: Equatable, Sendable {
         self.shadow = shadow
         self.opacity = min(max(opacity, 0), 1)
         self.isMirrored = isMirrored
+        self.lut = lut
     }
 }
 
@@ -768,7 +771,8 @@ public enum FrameSceneEvaluator {
                     )
                     : nil,
                 opacity: project.camera.isHidden ? 0 : evaluation.opacity * opening.opacity,
-                isMirrored: project.camera.isMirrored
+                isMirrored: project.camera.isMirrored,
+                lut: project.camera.lut
             )
         }
         let cursor = cursorScene(

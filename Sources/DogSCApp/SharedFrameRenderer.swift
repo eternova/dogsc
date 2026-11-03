@@ -193,7 +193,7 @@ enum SharedFrameRenderer {
                       cameraScene.opacity > 0,
                       let cameraImage = resources.camera else { continue }
                 let cameraLayer = renderCamera(
-                    source: cameraImage,
+                    source: CameraLUTRenderer.apply(cameraScene.lut, to: cameraImage),
                     scene: cameraScene,
                     over: transparent,
                     canvasRect: canvasRect

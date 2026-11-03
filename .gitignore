@@ -13,3 +13,6 @@ DerivedData/
 *.dogscproject/
 *.silkyproject/
 /open-check-project.command
+__pycache__/
+*.pyc
+.codex/config.toml

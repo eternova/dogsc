@@ -80,6 +80,7 @@ public enum ProjectValidator {
     }
 
     public static func validate(_ style: CameraStyle) throws {
+        try style.lut?.validate()
         guard finite(style.position.x, in: 0...1),
               finite(style.position.y, in: 0...1),
               finite(style.size, in: 0.01...1),

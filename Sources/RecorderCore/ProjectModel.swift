@@ -7,7 +7,8 @@ public enum ProjectSchema {
     public static let minimumSupportedVersion = 23
     // Version 24 adds authored canvas ratios. Version 23 projects retain their defaults.
     // Version 27 persists recording markers; older apps must not silently discard them.
-    public static let currentVersion = 27
+    // Version 28 embeds a camera LUT; older apps must not discard the grade.
+    public static let currentVersion = 28
 
     static func validateForDecoding(_ version: Int) throws {
         guard version >= minimumSupportedVersion else {
@@ -1177,6 +1178,7 @@ public struct AudioStyle: Codable, Equatable, Sendable {
 }
 
 public struct CameraStyle: Codable, Equatable, Sendable {
+    public var lut: CameraLUT? = nil
     public var shape: CameraShape
     public var position: NormalizedPoint
     public var size: Double
@@ -1220,6 +1222,7 @@ public struct CameraStyle: Codable, Equatable, Sendable {
     }
 
     private enum CodingKeys: String, CodingKey {
+        case lut
         case shape, position, size, borderWidth, shadowStrength
         case roundness, isMirrored, isHidden, scaleDuringZoom
         case contentPosition, contentScale
@@ -1227,6 +1230,8 @@ public struct CameraStyle: Codable, Equatable, Sendable {
 
     public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
+        lut = try container.decodeIfPresent(CameraLUT.self, forKey: .lut)
+        try lut?.validate()
         shape = try container.decodeIfPresent(CameraShape.self, forKey: .shape) ?? .square
         position = try container.decodeIfPresent(NormalizedPoint.self, forKey: .position)
             ?? NormalizedPoint(x: 0.96, y: 0.47)

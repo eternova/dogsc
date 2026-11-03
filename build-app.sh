@@ -4,8 +4,13 @@ set -euo pipefail
 
 cd "$(dirname "$0")"
 project_root="$PWD"
-app_output="$project_root/.build/local/DogSC Dev.app"
+app_output="${DOGSC_APP_OUTPUT:-$project_root/.build/local/DogSC Dev.app}"
 signing_identity="${DOGSC_SIGNING_IDENTITY:-}"
+build_configuration="${DOGSC_BUILD_CONFIGURATION:-release}"
+case "$build_configuration" in debug|release) ;; *) echo "DOGSC_BUILD_CONFIGURATION must be debug or release" >&2; exit 1 ;; esac
+is_target_running() {
+  ps -axo comm= | grep -F -x -- "$app_output/Contents/MacOS/DogSC" >/dev/null
+}
 
 if [[ -z "${DEVELOPER_DIR:-}" && -d /Applications/Xcode.app/Contents/Developer ]]; then
   export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
@@ -24,13 +29,13 @@ if ! security find-identity -v -p codesigning | grep -F "$signing_identity" >/de
   echo "The specified signing identity is not available in your keychain." >&2
   exit 1
 fi
-if [[ -e "$app_output" ]] && pgrep -x DogSC >/dev/null; then
+if [[ -e "$app_output" ]] && is_target_running; then
   echo "Save your work and quit DogSC before replacing an existing development app." >&2
   exit 1
 fi
 
-swift build -c release --product DogSC
-binary_dir="$(swift build -c release --show-bin-path)"
+swift build -c "$build_configuration" --product DogSC
+binary_dir="$(swift build -c "$build_configuration" --show-bin-path)"
 sparkle_source="$project_root/.build/artifacts/sparkle/Sparkle/Sparkle.xcframework/macos-arm64_x86_64/Sparkle.framework"
 [[ -f "$binary_dir/DogSC" && -d "$sparkle_source" ]]
 
@@ -86,7 +91,7 @@ grep -F 'flags=0x10000(runtime)' <<< "$signature_details" >/dev/null
 otool -l "$app/Contents/MacOS/DogSC" | grep -F '@executable_path/../Frameworks' >/dev/null
 
 # Check again after the build; never remove a bundle used by a running app.
-if [[ -e "$app_output" ]] && pgrep -x DogSC >/dev/null; then
+if [[ -e "$app_output" ]] && is_target_running; then
   echo "DogSC is running. Quit it and run this command again to install the new build." >&2
   exit 1
 fi
